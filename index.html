@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SSF2X Character generator</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <script src="src/phaser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <style>
+    canvas {
+      background-color: #333;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <ul>
+        <li>
+          Character:
+          <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
+            <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
+              {{ value }}
+            </option>
+          </select>  
+        </li>
+          <li>
+            Color:
+            <select v-model="color" name="color" v-on:change="changeCharacter()">
+              <option v-for="color in colors" v-bind:value="color">
+                {{ color.toUpperCase() }}
+              </option>
+            </select>
+          </li>
+          <li>
+            Flag:
+            <select v-model="flag" name="flag" v-on:change="changeFlag()">
+                <option v-for="flag in flags" v-bind:value="flag">
+                  {{ flag.toUpperCase() }}
+                </option>
+              </select>
+            </li>
+          <li>
+            Name: <input type="text">
+          </li>
+          <li>
+            Title: <textarea v-on:keyup="updateText" v-model="title" name="title" id="" cols="65" rows="4"></textarea>
+          </li>
+          Title font size: <input type="button" value="+" v-on:click="zoomIn()"> 
+          <input type="button" value="-" v-on:click="zoomOut()"> 
+        </ul>
+    </div>
+    <script src="src/index.js" async defer></script>
+  </body>
+</html>
