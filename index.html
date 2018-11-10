@@ -20,6 +20,7 @@
     </style>
   </head>
   <body>
+    <h1>SSF2X Character generator</h1>
     <div id="app">
       <ul>
         <li>
@@ -28,7 +29,8 @@
             <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
               {{ value }}
             </option>
-          </select>  
+          </select>
+          <input type="button" value="Flip Horizontal" v-on:click="flipHCharacter()">
         </li>
           <li>
             Color:
@@ -47,11 +49,16 @@
               </select>
             </li>
           <li>
-            Name: <input type="text">
+            Name: <input type="text" v-on:keyup="updateName" v-model="name">
           </li>
           <li>
-            Title: <textarea v-on:keyup="updateText" v-model="title" name="title" id="" cols="65" rows="4"></textarea>
+            Title: <textarea v-on:keyup="updateTitle" v-model="title" name="title" id="" cols="65" rows="4"></textarea>
           </li>
+          Font: <select v-model="fontName" name="font" v-on:change="changeFont()">
+              <option v-for="font in fontNames" v-bind:value="font">
+                {{ font }}
+              </option>
+            </select>
           Title font size: <input type="button" value="+" v-on:click="zoomIn()"> 
           <input type="button" value="-" v-on:click="zoomOut()"> 
         </ul>

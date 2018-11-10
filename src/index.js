@@ -1,12 +1,66 @@
-var game = new Phaser.Game(500, 400, Phaser.CANVAS, 'afm', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(550, 550, Phaser.CANVAS, 'afm', { preload: preload, create: create, update: update });
 
+nameOffsetTop = 230;
+
+function Text(id, fontName) {
+  this.id = id;
+  this.font = null;
+  this.setupFont(fontName);
+}
+
+Text.prototype = {
+  loadFont: function(f) {
+    game.load.image(this.id, 'assets/fonts/8x8/' + f + '.png', true);
+    game.load.start();
+  },
+  setText: function(text) {
+    this.text = this.font.text = text;
+  },
+  setupFont: function(fontName) {
+    this.fontName = fontName;
+    if (game.cache.getImage(fontName).width === 1520)
+    {
+        size = 16;
+    }
+    else
+    {
+        size = 8;
+    }
+    
+    styles = game.cache.getImage(fontName).height / size;
+
+    this.currentStyle = 0;
+/*
+    //$('#currentStyle').text('< ' + (currentStyle + 1));
+    //$('#totalStyles').text(styles + '  >');
+*/
+    if (this.image)
+    {
+        this.image.destroy();
+        this.font.destroy();
+    }
+
+    this.font = game.add.retroFont(fontName, size, size, Phaser.RetroFont.TEXT_SET1);
+    this.font.align = Phaser.RetroFont.ALIGN_CENTER;
+    this.font.multiLine = true;
+    this.font.autoUpperCase = false;
+    this.font.customSpacingX = currentSpacingX;
+    this.font.customSpacingY = currentSpacingY;
+    this.font.buildRetroFontText();
+
+    this.image = game.add.image(game.world.centerX, game.world.centerY - nameOffsetTop, this.font);
+    this.image.scale.set(4);
+    this.image.anchor.set(0.5);
+    this.image.smoothed = false;
+  }
+}
 
 function preload() {
 
   Phaser.Canvas.setSmoothingEnabled(game.context, false);
   Phaser.Canvas.setImageRenderingCrisp(game.canvas);
 
-  game.load.image('defaultFont', 'assets/fonts/Truxton (Toaplan).png');
+  game.load.image('defaultFont', 'assets/fonts/8x8/Street Fighter II (Capcom).png');
   Object.keys(app.characters).forEach(name => {
     app.colors.forEach(color => {
       var imageName = name + '-' + color;
@@ -29,73 +83,45 @@ var currentSpacingY = 0;
 var zoomTween = null;
 var lastTint = 0;
 
-function loadFont(f) {
-
-    game.load.image('font', 'assets/fonts/' + f + '.png', true);
-    game.load.start();
-
-}
-
 function fileComplete(progress, cacheKey) {
-    setupFont(cacheKey);
+  if (cacheKey === 'name') {
+    nameText.setupFont(cacheKey);
+  } else if (cacheKey === 'description') {
+    descriptionText.setupFont(cacheKey);
+  }
 }
 
-function setupFont(key) {
-
-    if (game.cache.getImage(key).width === 1520)
-    {
-        size = 16;
-    }
-    else
-    {
-        size = 8;
-    }
-    
-    styles = game.cache.getImage(key).height / size;
-
-    currentStyle = 0;
-/*
-    //$('#currentStyle').text('< ' + (currentStyle + 1));
-    //$('#totalStyles').text(styles + '  >');
-*/
-    if (image)
-    {
-        image.destroy();
-        font.destroy();
-    }
-
-    font = game.add.retroFont(key, size, size, Phaser.RetroFont.TEXT_SET1);
-    font.align = Phaser.RetroFont.ALIGN_CENTER;
-    font.multiLine = true;
-    font.autoUpperCase = false;
-    font.customSpacingX = currentSpacingX;
-    font.customSpacingY = currentSpacingY;
-    font.buildRetroFontText();
-
-    image = game.add.image(game.world.centerX, game.world.centerY, font);
-    image.scale.set(4);
-    image.anchor.set(0.5);
-    image.smoothed = false;
-
-}
-
+var nameText, descriptionText;
 var flagSprite;
 function create() {
 
     game.load.onFileComplete.add(fileComplete, this);
 
-    characterSprite = game.add.sprite(0, 0, 'Vega-lp');
+    characterSprite = game.add.sprite(0,0, 'Vega-lp');
     characterSprite.scale.setTo(2.33, 3);
     characterSprite.smoothed = false;
 
-    flagSprite = game.add.sprite(400, 30, 'spain');
-    //flagSprite.scale.setTo(0.5, 0.5);
+    flagSprite = game.add.sprite(game.world.centerX, 80, 'spain');
+    flagSprite.scale.setTo(0.5, 0.5);
+    flagSprite.anchor.set(0.5);
     flagSprite.smoothed = false;
 
-    setupFont('defaultFont');
-
+    nameText = new Text('name', 'defaultFont');
+    descriptionText = new Text('description', 'defaultFont');
 
     game.stage.backgroundColor = '#272323';
+
+    app.changeCharacter();
+
+    /*
+    var graphics = game.add.graphics(100, 100);
+    graphics.beginFill(0xFF3300);
+    graphics.lineStyle(1, 0xffd900);
+    graphics.moveTo(50, 390);
+    graphics.lineTo(300, 390);
+    graphics.endStroke();
+    */
+
 /*
     var backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
     backspace.onDown.add(deleteChar, this);
@@ -226,44 +252,12 @@ function prevStyle() {
 
 }
 
-function addSpace() {
-
-    t = t.concat(" ");
-
-}
-
-function addNewLine() {
-
-    t = t.concat("\n");
-
-}
-
-function keyPress(char) {
-
-    if (t === 'start typing')
-    {
-        t = '';
-    }
-
-    t = t.concat(char);
-
-}
-
-function deleteChar() {
-
-    if (t.length > 0)
-    {
-        t = t.substr(0, t.length - 1);
-    }
-
-}
-
 function update() {
-
-    font.text = app.title;
-
+  nameText.font.text = app.name;
+  descriptionText.font.text = app.title;
 }
 
+/*
 function savePicture() {
 
     var bmd = game.make.bitmapData(image.width, image.height);
@@ -339,14 +333,6 @@ $(function() {
 
     //$('#savePNG').click(savePicture);
 
-    $("#controls").click(function(event) {
-        $("#picker").spectrum("hide");
-        $("#tint").spectrum("hide");
-        event.preventDefault();
-        document.onselectstart = function() { return false; };
-        event.target.ondragstart = function() { return false; };
-        return false;
-    });
 
     $("#picker").spectrum({
         color: "#272323",
@@ -390,28 +376,27 @@ var characterSprite;
 var app = new Vue({
   el: '#app',
   data: {
-    title: 'Enjoy!',
+    title: 'I\'m a real street fighter',
     color: 'lp',
     character: 'Vega',
     characters: {
       //'Akuma': 'Akuma',
-      'Ryu': 'Ryu',
-      'Ehonda': 'Honda',
       'Blanka': 'Blanka',
-      'Guile': 'Guile',
-      'Thawk': 'T.Hawk',
-      'Feilong': 'Feilong',
       'Balrog': 'Boxer',
-      'Sagat': 'Sagat',
-
-      'Ken': 'Ken',
-      'Chunli': 'Chunli',
-      'Zangief': 'Zangief',
-      'Dhalsim': 'Dhalsim',
       'Cammy': 'Cammy',
-      'Deejay': 'Deejay',      
+      'Chunli': 'Chunli',
       'Vega': 'Claws',
-      'Mbison': 'Dictator'
+      'Mbison': 'Dictator',
+      'Deejay': 'Deejay',      
+      'Dhalsim': 'Dhalsim',
+      'Feilong': 'Feilong',
+      'Guile': 'Guile',
+      'Ehonda': 'Honda',
+      'Ken': 'Ken',
+      'Ryu': 'Ryu',
+      'Sagat': 'Sagat',
+      'Thawk': 'T.Hawk',
+      'Zangief': 'Zangief'
     },
     colors: [
       'lp', 'mp', 'hp',
@@ -422,28 +407,187 @@ var app = new Vue({
     flags: [
       'france',
       'italy',
-      'spain',
-      'catalunya'
+      'spain'
     ],
-    flag: 'spain'
+    fontName: 'Soldam (Data East)',
+    flag: 'spain',
+    fontNames: [
+      '1943 (Capcom)',
+      'ATASCII',
+      'Aero Fighters (Kaneko)',
+      'Afterburner (Sega)',
+      'Arabian Magic (Capcom)',
+      'ArkArea (UPL)',
+      'ArmoredWarriors (Capcom)',
+      'Art of Fighting 2 (SNK)',
+      'Assault (Namco)',
+      'Asterix (Konami)',
+      'Aurail (Sega)',
+      'Avengers (Capcom)',
+      'Batsugun (Toaplan)',
+      'Battle Bakraid (Eighting)',
+      'BattleCircuit (Capcom)',
+      'BioShipPaladin (UPL)',
+      'Black Tiger (Capcom)',
+      'Blazing Star (Yumekobo)',
+      'Blood Warrior (Kaneko)',
+      'Bonanza Bros (Sega)',
+      'Boogie Wings (Data East)',
+      'Boulder Dash (Data East)',
+      'Bubble Memories Alien (Taito)',
+      'Bubble Symphony (Taito)',
+      'Cameltry (Taito)',
+      'Captain Sky Hawk (RARE)',
+      'Chiki Chiki Boys (Capcom)',
+      'Cotton (Sega + Success)',
+      'Cybattler (Jaleco)',
+      'Dance Dance Revolution (Konami)',
+      'Dangerous Seed (Namco)',
+      'Dimahoo (Raizing)',
+      'DoDonPachi (Cave)',
+      'Don Doko Don (Taito)',
+      'Dragon Breed (Irem)',
+      'Dragon Saber (Namco)',
+      'Dragon Spirit (Namco)',
+      'Dynamite Dux (Sega)',
+      'Edward Randy (DataEast)',
+      'Fantasy Zone (Sega)',
+      'Final Star Force (Tecmo)',
+      'Flak Attack (Konami)',
+      'Flying Shark (Taito)',
+      'Gaiapolis (Konami)',
+      'Gain Ground (Sega)',
+      'Garou Densetsu (SNK)',
+      'Ghosts n Goblins (Capcom)',
+      'Ghouls n Ghosts (Capcom)',
+      'Gondomania (Data East)',
+      'Gradius 2 (Konami)',
+      'Gradius 3 (Konami)',
+      'Gradius 4 (Konami)',
+      'Gradius',
+      'Guardians (Banpresto)',
+      'Gun.Smoke (Capcom)',
+      'GunBuster (Taito)',
+      'GunNail (NMK)',
+      'Gyruss (Konami)',
+      'Hacha Mecha Fighter (NMK)',
+      'Hat Trick Hero 95 (Taito)',
+      'Image Fight (IREM)',
+      'Kaiser Knuckle (Taito)',
+      'Ketsui (Cave)',
+      'Kiki Kaikai (Taito)',
+      'King of Fighters 2000 (SNK)',
+      'King of Fighters 2001 (SNK)',
+      'King of Fighters 2002 (SNK)',
+      'King of Fighters 2003 (SNK)',
+      'King of Fighters 97 (SNK)',
+      'King of Fighters 97 Italic (SNK)',
+      'Kirameki Star Road (Taito)',
+      'Klax (Atari)',
+      'Klax Alternate (Atari)',
+      'Last Blade 2 (SNK)',
+      'Last Duel (Capcom)',
+      'Last Resort (SNK)',
+      'Legendary Wings (Capcom)',
+      'Light Bringer (Capcom)',
+      'Major Title (IREM)',
+      'Mars Matrix (Capcom)',
+      'Metal Warriors (Konami)',
+      'Monster Mauler (Konami)',
+      'Mutant Night (UPL)',
+      'Namco Classic Gradient',
+      'Namco Classic',
+      'Nebulas Ray (Namco)',
+      'Ninja Gaiden (Tecmo)',
+      'Ninja Masters (ADK)',
+      'Ninja Spirit (IREM)',
+      'Outfoxies (Namco)',
+      'Pachinko Sexy Reaction 2 (Sammy)',
+      'Panic Bomber (Hudson)',
+      'Parodius (Konami)',
+      'Pickford Brothers',
+      'Pulstar (Aicom)',
+      'Puzzle Bobble (Taito)',
+      'Quake (id)',
+      'R Type (Irem)',
+      'R Type LEO (Irem)',
+      'Raiden Fighters (Seibu)',
+      'Rapid Hero (MTC)',
+      'RayForce (Taito)',
+      'Robotron (Williams)',
+      'Rumba Lumber (Taito)',
+      'SDI (Sega)',
+      'Salamander 2 (Konami)',
+      'Samurai Shodown 2 (SNK)',
+      'Samurai Shodown 3 (SNK)',
+      'ShadowDancer (Sega)',
+      'Shinobi (Sega)',
+      'Sky Fox (Nichibutsu)',
+      'Sky Soldier (SNK)',
+      'Snow Bros (Toaplan)',
+      'Soldam (Data East)',
+      'Solomons Key (Tecmo)',
+      'Special (Capcom)',
+      'Speed Rumbler (Capcom)',
+      'Street Fighter II (Capcom)',
+      'Street Fighter Zero 3 (Capcom)',
+      'Super Mario Bros 3 (Nintendo)',
+      'Super Street Fighter 2 (Capcom)',
+      'Tatakae Big Fighter (Nichibutsu)',
+      'Terra Force (Nichibutsu)',
+      'Tetris (Sega)',
+      'The Simpsons (Konami)',
+      'Thunder Dragon (NMK)',
+      'Time Pilot 84 (Konami)',
+      'Time Soldiers (ADK)',
+      'Top Ranking Stars (Taito)',
+      'Truxton (Toaplan)',
+      'Twin Cobra (Toaplan)',
+      'Twin Cobra II (Taito)',
+      'Twin Qix (Taito)',
+      'Typhoon (Konami)',
+      'UN Squadron (Capcom)',
+      'Victory Road (SNK)',
+      'Waku Waku 7 (Sunsoft)',
+      'Willow (Capcom)',
+      'Wonder Boy (Sega)',
+      'Xexex (Konami)'
+    ],
+    name: 'name' 
   },
   methods: {
     changeCharacter: function () {
       characterSprite.loadTexture(this.character + '-' + this.color);
+      characterSprite.anchor.set(0.5);
+      characterSprite.position.x = game.world.centerX;
+      let offset = this.character === 'Thawk' ? 30 : 50;
+      characterSprite.position.y = game.world.height - characterSprite.height / 2 - offset;
+      
       characterSprite.smoothed = false;  
     },
     changeFlag: function () {
       flagSprite.loadTexture(this.flag);
-      flagSprite.smoothed = false;  
+      flagSprite.smoothed = false;
     },
-    updateText: function () {
-      t = this.title;
+    updateName: function () {
+      nameText.font.text = this.name;
+      //image.position.y = game.world.centerY - 200;
+    },
+    updateTitle: function () {
+      descriptionText.font.text = this.title;
+      //image.position.y = game.world.centerY - 200;
     },
     zoomIn: function () {
       zoomIn();
     },
     zoomOut: function () {
       zoomOut();
+    },
+    changeFont: function() {
+      nameText.loadFont(this.fontName);
+    },
+    flipHCharacter: function () {
+      characterSprite.scale.x *= -1;
     }
   }
 });
