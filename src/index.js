@@ -1,14 +1,37 @@
 var game = new Phaser.Game(550, 550, Phaser.CANVAS, 'afm', { preload: preload, create: create, update: update });
 
 nameOffsetTop = 230;
+titleOffsetTop = -240;
 
-function Text(id, fontName) {
+function Text(id, position, scale, fontName) {
   this.id = id;
   this.font = null;
+  this.position = position;
   this.setupFont(fontName);
+  this.setScale(scale);
 }
 
 Text.prototype = {
+  setScale: function(scale) {
+    this.image.scale.x = scale;
+    this.image.scale.y = scale;
+  },
+  zoomIn: function() {
+    if (zoomTween && zoomTween.isRunning) {
+      return;
+    }
+
+    zoomTween = game.add.tween(this.image.scale).to( { x: this.image.scale.x + 1, y: this.image.scale.y + 1 }, 250, Phaser.Easing.Linear.None, true);
+  },
+  zoomOut: function() {
+    if (zoomTween && zoomTween.isRunning) {
+      return;
+    }
+
+    if (this.image.scale.x > 1) {
+      zoomTween = game.add.tween(this.image.scale).to( { x: this.image.scale.x - 1, y: this.image.scale.y - 1 }, 250, Phaser.Easing.Linear.None, true);
+    }
+  },
   loadFont: function(f) {
     game.load.image(this.id, 'assets/fonts/8x8/' + f + '.png', true);
     game.load.start();
@@ -30,10 +53,7 @@ Text.prototype = {
     styles = game.cache.getImage(fontName).height / size;
 
     this.currentStyle = 0;
-/*
-    //$('#currentStyle').text('< ' + (currentStyle + 1));
-    //$('#totalStyles').text(styles + '  >');
-*/
+
     if (this.image)
     {
         this.image.destroy();
@@ -48,7 +68,7 @@ Text.prototype = {
     this.font.customSpacingY = currentSpacingY;
     this.font.buildRetroFontText();
 
-    this.image = game.add.image(game.world.centerX, game.world.centerY - nameOffsetTop, this.font);
+    this.image = game.add.image(this.position.x, this.position.y, this.font);
     this.image.scale.set(4);
     this.image.anchor.set(0.5);
     this.image.smoothed = false;
@@ -67,6 +87,11 @@ function preload() {
       game.load.image(imageName, `assets/characters/${imageName}.gif`);
     });
   });
+  
+  for (let bgname in app.backgrounds) {
+    let path = app.backgrounds[bgname];
+    game.load.image('background-' + bgname, `assets/backgrounds/${path}`);
+  }
 
   app.flags.forEach(name => {
     game.load.image(name, `assets/flags/${name}.png`);
@@ -93,9 +118,17 @@ function fileComplete(progress, cacheKey) {
 
 var nameText, descriptionText;
 var flagSprite;
+var background;
 function create() {
 
     game.load.onFileComplete.add(fileComplete, this);
+
+    background = game.add.sprite(0,-80, 'background-Blanka');
+    background.scale.setTo(2.33, 3);
+    background.smoothed = false;
+
+    var c = Phaser.Color.getColor(1,1,0);
+    background.tint = c;
 
     characterSprite = game.add.sprite(0,0, 'Vega-lp');
     characterSprite.scale.setTo(2.33, 3);
@@ -106,15 +139,16 @@ function create() {
     flagSprite.anchor.set(0.5);
     flagSprite.smoothed = false;
 
-    nameText = new Text('name', 'defaultFont');
-    descriptionText = new Text('description', 'defaultFont');
+    nameText = new Text('name', {x: game.world.centerX, y: game.world.centerY - nameOffsetTop}, 4, 'defaultFont');
+    descriptionText = new Text('description', {x: game.world.centerX, y: game.world.centerY - titleOffsetTop}, 2, 'defaultFont');
 
     game.stage.backgroundColor = '#272323';
 
     app.changeCharacter();
 
+
     /*
-    var graphics = game.add.graphics(100, 100);
+    var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
     graphics.beginFill(0xFF3300);
     graphics.lineStyle(1, 0xffd900);
     graphics.moveTo(50, 390);
@@ -163,31 +197,6 @@ function updateTint(color) {
     {
         image.tint = c;
         lastTint = c;
-    }
-
-}
-
-function zoomIn() {
-
-    if (zoomTween && zoomTween.isRunning)
-    {
-        return;
-    }
-
-    zoomTween = game.add.tween(image.scale).to( { x: image.scale.x + 1, y: image.scale.y + 1 }, 250, Phaser.Easing.Linear.None, true);
-
-}
-
-function zoomOut() {
-
-    if (zoomTween && zoomTween.isRunning)
-    {
-        return;
-    }
-
-    if (image.scale.x > 1)
-    {
-        zoomTween = game.add.tween(image.scale).to( { x: image.scale.x - 1, y: image.scale.y - 1 }, 250, Phaser.Easing.Linear.None, true);
     }
 
 }
@@ -553,7 +562,13 @@ var app = new Vue({
       'Wonder Boy (Sega)',
       'Xexex (Konami)'
     ],
-    name: 'name' 
+    name: 'name',
+    backgrounds: {
+      'Blanka': 'sf2st-blanka.gif',
+      'Dictator': 'ssf2x-dictator.gif',
+      'Sagat': 'ssf2x-sagat.gif'
+    },
+    background: 'Sagat'
   },
   methods: {
     changeCharacter: function () {
@@ -566,8 +581,13 @@ var app = new Vue({
       characterSprite.smoothed = false;  
     },
     changeFlag: function () {
-      flagSprite.loadTexture(this.flag);
-      flagSprite.smoothed = false;
+      if (this.flag === 'none') {
+        flagSprite.visible = false;
+      } else {
+        flagSprite.loadTexture(this.flag);
+        flagSprite.smoothed = false;
+        flagSprite.visible = true;  
+      }
     },
     updateName: function () {
       nameText.font.text = this.name;
@@ -578,13 +598,17 @@ var app = new Vue({
       //image.position.y = game.world.centerY - 200;
     },
     zoomIn: function () {
-      zoomIn();
+      nameText.zoomIn();
     },
     zoomOut: function () {
-      zoomOut();
+      nameText.zoomOut();
     },
     changeFont: function() {
       nameText.loadFont(this.fontName);
+    },
+    changeBackground: function () {
+      background.loadTexture('background-' + this.background);
+      background.smoothed = false;
     },
     flipHCharacter: function () {
       characterSprite.scale.x *= -1;

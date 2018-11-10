@@ -24,6 +24,14 @@
     <div id="app">
       <ul>
         <li>
+            Backgrounbd:
+            <select v-model="background" v-on:change="changeBackground()" name="background" id="">
+              <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
+                {{ key }}
+              </option>
+            </select>
+          </li>
+        <li>
           Character:
           <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
             <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
@@ -43,6 +51,7 @@
           <li>
             Flag:
             <select v-model="flag" name="flag" v-on:change="changeFlag()">
+                <option value="none"></option>
                 <option v-for="flag in flags" v-bind:value="flag">
                   {{ flag.toUpperCase() }}
                 </option>
