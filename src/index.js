@@ -1,4 +1,4 @@
-var game = new Phaser.Game(550, 550, Phaser.CANVAS, 'afm', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(550, 550, Phaser.WEBGL, 'afm', { preload: preload, create: create, update: update });
 
 nameOffsetTop = 230;
 titleOffsetTop = -240;
@@ -77,7 +77,7 @@ Text.prototype = {
 
 function preload() {
 
-  Phaser.Canvas.setSmoothingEnabled(game.context, false);
+  // Phaser.Canvas.setSmoothingEnabled(game.context, false);
   Phaser.Canvas.setImageRenderingCrisp(game.canvas);
 
   game.load.image('defaultFont', 'assets/fonts/8x8/Street Fighter II (Capcom).png');
@@ -96,6 +96,9 @@ function preload() {
   app.flags.forEach(name => {
     game.load.image(name, `assets/flags/${name}.png`);
   });
+
+  game.load.shader('scanlines', 'assets/shaders/scanlines.frag');
+  game.load.shader('scanlines-simple', 'assets/shaders/scanlines-simple.frag');
 }
 
 var font = null;
@@ -123,12 +126,11 @@ function create() {
 
     game.load.onFileComplete.add(fileComplete, this);
 
-    background = game.add.sprite(0,-80, 'background-Blanka');
+    background = game.add.sprite(0,0, 'background-Blanka');
+    background.position.set(0, -120);
     background.scale.setTo(2.33, 3);
     background.smoothed = false;
-
-    var c = Phaser.Color.getColor(1,1,0);
-    background.tint = c;
+    background.tint = Phaser.Color.hexToRGB('#27339f');
 
     characterSprite = game.add.sprite(0,0, 'Vega-lp');
     characterSprite.scale.setTo(2.33, 3);
@@ -146,6 +148,14 @@ function create() {
 
     app.changeCharacter();
 
+    scanlineFilter = new Phaser.Filter(game, null, game.cache.getShader('scanlines'));
+    //scanlineFilter = new Phaser.Filter(game, null, game.cache.getShader('scanlines-simple'));
+    game.world.filters = [scanlineFilter];
+
+    scanlineFilter.uniforms.resolution.value.x = game.canvas.width;
+    scanlineFilter.uniforms.resolution.value.y = game.canvas.height;
+  
+    scanlineFilter.uniforms.enabled = { type: '1i', value: app.scanlines ? 1 : 0 };
 
     /*
     var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
@@ -261,9 +271,12 @@ function prevStyle() {
 
 }
 
+var scanlineFilter;
+
+var init =performance.now();
 function update() {
   nameText.font.text = app.name;
-  descriptionText.font.text = app.title;
+  descriptionText.font.text = app.title;  
 }
 
 /*
@@ -566,9 +579,12 @@ var app = new Vue({
     backgrounds: {
       'Blanka': 'sf2st-blanka.gif',
       'Dictator': 'ssf2x-dictator.gif',
-      'Sagat': 'ssf2x-sagat.gif'
+      'World0': 'Ssf2t-world.gif',
+      'World': 'Ssf2t-world-final.gif'
     },
-    background: 'Sagat'
+    background: 'Sagat',
+    backgroundTint: '#27339f',
+    scanlines: false
   },
   methods: {
     changeCharacter: function () {
@@ -591,11 +607,9 @@ var app = new Vue({
     },
     updateName: function () {
       nameText.font.text = this.name;
-      //image.position.y = game.world.centerY - 200;
     },
     updateTitle: function () {
       descriptionText.font.text = this.title;
-      //image.position.y = game.world.centerY - 200;
     },
     zoomIn: function () {
       nameText.zoomIn();
@@ -609,9 +623,20 @@ var app = new Vue({
     changeBackground: function () {
       background.loadTexture('background-' + this.background);
       background.smoothed = false;
+      let y = 120;
+      if (background.height - y < game.canvas.height) {
+        y = Math.abs(game.canvas.height - background.height);
+      }
+      background.position.set(0, -y);
+    },
+    changeBackgroundColorTint: function () {
+      background.tint = Phaser.Color.hexToRGB(this.backgroundTint);
     },
     flipHCharacter: function () {
       characterSprite.scale.x *= -1;
+    },
+    changeScanlines: function () {
+      scanlineFilter.uniforms.enabled.value = this.scanlines ? 1 : 0;
     }
   }
 });

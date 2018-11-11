@@ -9,27 +9,24 @@
     <title>SSF2X Character generator</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="">
-    <script src="src/phaser.js"></script>
+    <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/mr-pixel" type="text/css"/>
+    <link rel="stylesheet" href="style.css" type="text/css"/>
+    <script src="http://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-
-    <style>
-    canvas {
-      background-color: #333;
-    }
-    </style>
   </head>
   <body>
     <h1>SSF2X Character generator</h1>
     <div id="app">
       <ul>
+        <label>Scanlines: <input name="scanlines" type="checkbox" v-model="scanlines" v-on:change="changeScanlines()"></label>
         <li>
-            Backgrounbd:
+            Background:
             <select v-model="background" v-on:change="changeBackground()" name="background" id="">
               <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
                 {{ key }}
               </option>
             </select>
+            Tint: <input type='color' value="#ffffff" v-model="backgroundTint" v-on:change="changeBackgroundColorTint"/>
           </li>
         <li>
           Character:

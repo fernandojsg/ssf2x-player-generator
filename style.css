@@ -1,0 +1,31 @@
+body {
+  font-family: 'VTFMisterPixelRegular'; 
+  font-weight: normal; 
+  font-style: normal;
+}
+
+input[type=color] {
+  background-color: #333;
+  border: 1px solid #111;
+  cursor: pointer;
+  height: 16px;
+  padding: 0;
+  width: 40px;
+}
+
+input[type=color]::-webkit-color-swatch {
+  border: 0;  /* To remove the gray border. */
+}
+
+input[type=color]::-webkit-color-swatch-wrapper {
+  padding: 0;  /* To remove the inner padding. */
+}
+
+input[type=color]::-moz-color-swatch {
+  border: 0;
+}
+
+input[type=color]::-moz-focus-inner {
+  border: 0;  /* To remove the inner border (specific to Firefox). */
+  padding: 0;
+}      
