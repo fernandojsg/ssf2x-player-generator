@@ -1,4 +1,4 @@
-var game = new Phaser.Game(550, 550, Phaser.WEBGL, 'afm', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(550, 550, Phaser.WEBGL, 'container', { preload: preload, create: create, update: update });
 
 nameOffsetTop = 230;
 titleOffsetTop = -240;
@@ -274,8 +274,8 @@ var app = new Vue({
   el: '#app',
   data: {
     title: 'I\'m a real street fighter',
-    color: 'lp',
-    character: 'Vega',
+    color: 'old1',
+    character: 'Ryu',
     characters: {
       //'Akuma': 'Akuma',
       'Blanka': 'Blanka',
@@ -306,8 +306,6 @@ var app = new Vue({
       'italy',
       'spain'
     ],
-    fontName: 'Soldam (Data East)',
-    fontTitle: 'Soldam (Data East)',
     flag: 'spain',
     fontNames: [
       '1943 (Capcom)',
@@ -471,7 +469,7 @@ var app = new Vue({
         scale: 4
       },
       background: {
-        position: {x: 100, y: 200},
+        position: {x: 100, y: 224},
         scale: 1
       },
       character: {
@@ -485,9 +483,14 @@ var app = new Vue({
       }
     },
     texts: {
-      name: {},
-      description: {},
-      value: ''
+      name: {
+        fontName: 'Street Fighter II (Capcom)',
+        value: ''
+      },
+      description: {
+        fontName: 'Street Fighter II (Capcom)',
+        value: ''
+      },
     }
   },
   methods: {
@@ -527,10 +530,10 @@ var app = new Vue({
       font.prevStyle();
     },
     changeFontName: function() {
-      app.texts.name.loadFont(this.fontName);
+      app.texts.name.loadFont(app.texts.name.fontName);
     },
     changeFontTitle: function() {
-      app.texts.description.loadFont(this.fontTitle);
+      app.texts.description.loadFont(app.texts.description.fontName);
     },
     changeBackground: function () {
       if (this.background === 'Solid color') {
@@ -557,6 +560,10 @@ var app = new Vue({
     },
     changeScanlines: function () {
       scanlineFilter.uniforms.enabled.value = this.scanlines ? 1 : 0;
+    },
+    nextColor: function () {
+      this.color = (this.colors.indexOf(this.color) + 1) % this.colors.length;
+      console.log(this.color);
     },
     savePicture: function () {
       var bmd = game.make.bitmapData(game.canvas.width, game.canvas.height);

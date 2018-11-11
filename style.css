@@ -1,7 +1,54 @@
+html {
+  background-color: #999;
+  display: flex;
+  height: 100%;
+}
+
 body {
-  font-family: 'VTFMisterPixelRegular'; 
+  /*font-family: 'VTFMisterPixelRegular'; */
+  font-family: "Segoe UI",Roboto,"Helvetica Neue",sans-serif;
   font-weight: normal; 
   font-style: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #999;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+#logo {
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+#app {
+  border: 1px solid #666;
+  margin: 10px;
+  max-width: 1210px;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px;
+  box-shadow: inset 0px 0px 21px -6px rgba(0,0,0,0.75);
+}
+
+#container {
+  display: flex;
+  justify-content: center;
+}
+
+#bottom {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+canvas {
+  margin-top: 20px;
+  filter: drop-shadow(0 0 0.2rem black);
 }
 
 input[type=range] {
@@ -10,9 +57,8 @@ input[type=range] {
 
 input[type=color] {
   background-color: #333;
-  border: 1px solid #111;
   cursor: pointer;
-  height: 16px;
+  height: 22px;
   padding: 0;
   width: 40px;
 }
@@ -33,3 +79,13 @@ input[type=color]::-moz-focus-inner {
   border: 0;  /* To remove the inner border (specific to Firefox). */
   padding: 0;
 }      
+
+ul li {
+  margin-bottom: 8px;
+}
+
+#logo {
+  background-color: #eee;
+  display: flex;
+  justify-content: center;
+}

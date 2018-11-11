@@ -10,86 +10,211 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/mr-pixel" type="text/css"/>
-    <link rel="stylesheet" href="style.css" type="text/css"/>
+    <!--<script src="https://cdnjs.com/libraries/bulma"></script>-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script defer src="vendor/bulma-slider.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <!--<script src="vendor/file-saver.js"></script>-->
+    <link rel="stylesheet" href="vendor/bulma-slider.min.css" type="text/css"/>
+    <link rel="stylesheet" href="style.css" type="text/css"/>
   </head>
   <body>
-    <div id="app">
-      <h1>SSF2X Character generator</h1>
-      <ul>
-      <label>Scanlines: <input name="scanlines" type="checkbox" v-model="scanlines" v-on:change="changeScanlines()"></label>
-      <li>
-          Background:
-          <select v-model="background" v-on:change="changeBackground()" name="background" id="">
-            <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
-              {{ key }}
-            </option>
-          </select>
-          Tint: <input type='color' value="#ffffff" v-model="backgroundTint" v-on:change="changeBackgroundColorTint"/>
-        </li>
-      <li>
-        Character:
-        <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
-          <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
-            {{ value }}
-          </option>
-        </select>
-        <input type="button" value="Flip Horizontal" v-on:click="flipHCharacter()">
-      </li>
-        <li>
-          Color:
-          <select v-model="color" name="color" v-on:change="changeCharacter()">
-            <option v-for="color in colors" v-bind:value="color">
-              {{ color.toUpperCase() }}
-            </option>
-          </select>
-        </li>
-        <li>
-          Flag:
-          <select v-model="flag" name="flag" v-on:change="changeFlag()">
+    <div id="app" class="container">
+      <div id="logo">
+        <img src="assets/logo.png" alt="SSF2X Character generator">
+      </div>
+
+      <div class="columns">
+          <div class="column">
+      
+      
+      
+
+      <div class="field is-horizontal">
+        <div class="field-label is-small">
+          <label class="label">Character</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+            <div class="select is-small is-fullwidth">
+              <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
+                <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
+                  {{ value }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <!--
+          <div class="field">
+              <a class="button is-small" v-on:click="prevFont(texts.name)">▲</a>
+              <a class="button is-small" v-on:click="nextFont(texts.name)">▼</a>    
+          </div>
+          -->
+          <div class="field">
+            <a class="button is-small" v-on:click="flipHCharacter()">Flip Horizontal</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+        <div class="field-label is-small">
+          <label class="label">Color</label>
+        </div>
+        <div class="field-body">
+          <div class="field">
+              <div class="select is-small">
+                  <select v-model="color" name="color" v-on:change="changeCharacter()">
+                    <option v-for="color in colors" v-bind:value="color">
+                      {{ color.toUpperCase() }}
+                    </option>
+                  </select>
+                </div>      
+          </div>
+        </div>
+      </div>
+      
+      <div class="field is-horizontal">
+        <div class="field-label is-small">
+          <label class="label">Flag</label>
+        </div>
+        <div class="field-body">
+          <div class="select is-small">
+            <select v-model="flag" name="flag" v-on:change="changeFlag()">
               <option value="none"></option>
               <option v-for="flag in flags" v-bind:value="flag">
                 {{ flag.toUpperCase() }}
               </option>
             </select>
-          </li>
-        <li>
-          Name: <input type="text" v-on:keyup="updateName" v-model="name"><br/>
-          Font: <select v-model="fontName" name="font" v-on:change="changeFontName()">
-              <option v-for="font in fontNames" v-bind:value="font">
-                {{ font }}
-              </option>
-            </select>
-            <button v-on:click="prevFont(texts.name)">▲</button>
-            <button v-on:click="nextFont(texts.name)">▼</button>
-            style:
-            <button v-on:click="prevStyle(texts.name)"><</button>
-            <button v-on:click="nextStyle(texts.name)">></button>
-            {{(texts.name.currentStyle + 1)}}/{{(texts.name.numStyles)}}
-          </li>
-        <li>
-          Title: <textarea v-on:keyup="updateTitle" v-model="title" name="title" id="" cols="65" rows="4"></textarea><br>
-          Font: <select v-model="fontTitle" name="font" v-on:change="changeFontTitle()">
-              <option v-for="font in fontNames" v-bind:value="font">
-                {{ font }}
-              </option>
-            </select>          
-          </li>
-        <li style="margin-top: 20px">
-            <label><input type="radio" value="name" v-model="selected"> name</label>
-            <label><input type="radio" value="character" v-model="selected"> character</label>
-            <label><input type="radio" value="description" v-model="selected"> description</label>
-            <label><input type="radio" value="background" v-model="selected"> background</label>
-        </li>
-        Zoom: <input type="range" v-model="transforms[selected].scale" min="1" max="10" step="0.5"> x{{transforms[selected].scale}}
-        Position  x:<input type="range" v-model="transforms[selected].position.x" min="0" max="550"> {{transforms[selected].position.x}}
-        y:<input type="range" v-model="transforms[selected].position.y" min="0" max="550"> {{transforms[selected].position.y }}
-        <li>
-          <!--<button v-on:click="savePicture()">Save picture to PNG</button>-->
-        </li>
-      </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="field is-horizontal">
+          <div class="field-label is-small">
+              <label class="label">Background</label>
+            </div>
+            <div class="field-body">
+              <div class="select is-small">
+                <select v-model="background" v-on:change="changeBackground()" name="background" id="">
+                  <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
+                    {{ key }}
+                  </option>
+                </select>
+              </div>
+            </div>
+        </div>
+  
+        <div class="field is-horizontal">
+          <div class="field-label is-small">
+            <label class="label">Background tint</label>
+          </div>
+          <div class="field-body">
+              <input type='color' value="#ffffff" v-model="backgroundTint" v-on:change="changeBackgroundColorTint"/>
+          </div>
+        </div>
+            
+        <div class="field is-horizontal">
+            <div class="field-label is-small">
+              <label class="label">Name</label>
+            </div>
+            <div class="field-body">
+              <textarea class="textarea is-small" v-on:keyup="updateName" v-model="name" name="name" id="" cols="65" rows="1"></textarea>
+            </div>
+          </div>
+
+          
+        <div class="field is-horizontal">
+            <div class="field-label is-small">
+              <label class="label">Subtitle</label>
+            </div>
+            <div class="field-body">
+                <textarea class="textarea is-small" v-on:keyup="updateTitle" v-model="title" name="title" id="" cols="65" rows="1"></textarea>
+                <!--<div class="select is-small">
+                    <select v-model="texts.description.fontName" name="font" v-on:change="changeFontTitle()">
+                      <option v-for="font in fontNames" v-bind:value="font">
+                        {{ font }}
+                      </option>
+                    </select>
+                  </div>-->
+                        </div>
+          </div>
+
+            <div class="field is-horizontal">
+              <div class="field-label is-small">
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="select is-small">
+                    <select v-model="texts.name.fontName" name="font" v-on:change="changeFontName()">
+                      <option v-for="font in fontNames" v-bind:value="font">
+                        {{ font }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                    <a class="button is-small" v-on:click="prevFont(texts.name)"><i class="fas fa-caret-up"></i></a>
+                    <a class="button is-small" v-on:click="nextFont(texts.name)"><i class="fas fa-caret-down"></i></a>
+                </div>
+                <div class="field">
+                  Style:
+                  <a class="button is-small" v-on:click="prevStyle(texts.name)"><i class="fas fa-caret-left"></i></a>
+                  <a class="button is-small" v-on:click="nextStyle(texts.name)"><i class="fas fa-caret-right"></i></a>
+                  {{(texts.name.currentStyle + 1)}}/{{(texts.name.numStyles)}}
+                </div>    
+              </div>
+          </div>
+            
+          <div class="field is-horizontal">
+              <div class="field-label is-small">
+                <label class="label">Scanlines</label>
+              </div>
+              <div class="field-body">
+                <input name="scanlines" type="checkbox" v-model="scanlines" v-on:change="changeScanlines()">
+              </div>
+          </div>
+    
+          <div class="field is-horizontal">
+              <div class="field-label is-small">
+                  <label class="label">Transforms</label>
+              </div>
+                <div class="field-body">
+                <div class="control">
+                    <label class="radio"><input type="radio" value="name" v-model="selected"> name</label>
+                    <label class="radio"><input type="radio" value="character" v-model="selected"> character</label>
+                    <label class="radio"><input type="radio" value="description" v-model="selected"> description</label>
+                    <label class="radio"><input type="radio" value="background" v-model="selected"> background</label>
+                  </div>        
+            </div>
+          </div>
+
+          <div class="field is-horizontal">
+              <div class="field-label is-small">
+              </div>
+              <div class="field-body">
+                <ul>
+                  <li>
+                      <label class="label is-small">Zoom: <input class="slider" type="range" v-model="transforms[selected].scale" min="1" max="10" step="0.5"> x{{transforms[selected].scale}}</label>
+                  </li>
+                  <li>
+                    <label class="label is-small">Position: X:<input class="slider" type="range" v-model="transforms[selected].position.x" min="0" max="550"> {{275 - transforms[selected].position.x}} Y: <input class="slider" type="range" v-model="transforms[selected].position.y" min="0" max="550"> {{275 - transforms[selected].position.y }}</b>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+      <div class="column">
+      <div id="container"></div>
+      </div>
+    </div>
+    <div id="bottom">
+          By <a href="https://twitter.com/fernandojsg">@fernandojsg</a> source code on <a href="https://github.com/fernandojsg/ssf2x-player-generator/">Github</a>.
+          Font code from <a href="http://arcade.photonstorm.com/">Arcade Font Writer</a> by <a href="https://twitter.com/photonstorm">@photonstorm</a>
+      </div>
     </div>
     <script src="src/index.js" async defer></script>
   </body>
