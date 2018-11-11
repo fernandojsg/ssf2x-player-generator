@@ -1,8 +1,4 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -10,14 +6,13 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" media="screen" href="https://fontlibrary.org/face/mr-pixel" type="text/css"/>
-    <!--<script src="https://cdnjs.com/libraries/bulma"></script>-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     <script defer src="vendor/bulma-slider.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <!--<script src="vendor/file-saver.js"></script>-->
+    <script src="vendor/file-saver.js"></script>
     <link rel="stylesheet" href="vendor/bulma-slider.min.css" type="text/css"/>
     <link rel="stylesheet" href="style.css" type="text/css"/>
   </head>
@@ -125,6 +120,32 @@
             </div>
           </div>
 
+          <div class="field is-horizontal">
+              <div class="field-label is-small">
+              </div>
+              <div class="field-body">
+                <div class="field">
+                  <div class="select is-small">
+                    <select v-model="texts.name.fontName" name="font" v-on:change="changeFontName()">
+                      <option v-for="font in fontNames" v-bind:value="font">
+                        {{ font }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                    <a class="button is-small" v-on:click="prevFont(texts.name)"><i class="fas fa-caret-up"></i></a>
+                    <a class="button is-small" v-on:click="nextFont(texts.name)"><i class="fas fa-caret-down"></i></a>
+                </div>
+                <div class="field">
+                  Style:
+                  <a class="button is-small" v-on:click="prevStyle(texts.name)"><i class="fas fa-caret-left"></i></a>
+                  <a class="button is-small" v-on:click="nextStyle(texts.name)"><i class="fas fa-caret-right"></i></a>
+                  {{(texts.name.currentStyle + 1)}}/{{(texts.name.numStyles)}}
+                </div>    
+              </div>
+          </div>
+    
           
         <div class="field is-horizontal">
             <div class="field-label is-small">
@@ -148,7 +169,7 @@
               <div class="field-body">
                 <div class="field">
                   <div class="select is-small">
-                    <select v-model="texts.name.fontName" name="font" v-on:change="changeFontName()">
+                    <select v-model="texts.description.fontName" name="font" v-on:change="changeFontTitle()">
                       <option v-for="font in fontNames" v-bind:value="font">
                         {{ font }}
                       </option>
@@ -156,14 +177,14 @@
                   </div>
                 </div>
                 <div class="field">
-                    <a class="button is-small" v-on:click="prevFont(texts.name)"><i class="fas fa-caret-up"></i></a>
-                    <a class="button is-small" v-on:click="nextFont(texts.name)"><i class="fas fa-caret-down"></i></a>
+                    <a class="button is-small" v-on:click="prevFont(texts.description)"><i class="fas fa-caret-up"></i></a>
+                    <a class="button is-small" v-on:click="nextFont(texts.description)"><i class="fas fa-caret-down"></i></a>
                 </div>
                 <div class="field">
                   Style:
-                  <a class="button is-small" v-on:click="prevStyle(texts.name)"><i class="fas fa-caret-left"></i></a>
-                  <a class="button is-small" v-on:click="nextStyle(texts.name)"><i class="fas fa-caret-right"></i></a>
-                  {{(texts.name.currentStyle + 1)}}/{{(texts.name.numStyles)}}
+                  <a class="button is-small" v-on:click="prevStyle(texts.description)"><i class="fas fa-caret-left"></i></a>
+                  <a class="button is-small" v-on:click="nextStyle(texts.description)"><i class="fas fa-caret-right"></i></a>
+                  {{(texts.description.currentStyle + 1)}}/{{(texts.description.numStyles)}}
                 </div>    
               </div>
           </div>
@@ -205,7 +226,10 @@
                 </ul>
               </div>
             </div>
-
+            <hr/>
+            <div class="field is-horizontal download">
+                <a class="button is-info" v-on:click="savePicture()">Download Image</a>
+            </div>
           </div>
       <div class="column">
       <div id="container"></div>

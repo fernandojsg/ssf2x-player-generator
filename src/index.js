@@ -1,4 +1,5 @@
 var game = new Phaser.Game(550, 550, Phaser.WEBGL, 'container', { preload: preload, create: create, update: update });
+game.preserveDrawingBuffer = true;
 
 nameOffsetTop = 230;
 titleOffsetTop = -240;
@@ -7,6 +8,7 @@ function Text(id, position, scale, fontName) {
   this.id = id;
   this.font = null;
   this.position = position;
+  this.fontName = fontName;
   this.setupFont(fontName);
   this.setScale(scale);
   this.currentStyle = 0;
@@ -30,6 +32,7 @@ Text.prototype = {
     this.image.scale.y = scale;
   },
   loadFont: function(f) {
+    console.log('>>>>>>>>>>>>>>', f);
     this.fontName = f;
     game.load.image(this.id, 'assets/fonts/8x8/' + f + '.png', true);
     game.load.start();
@@ -77,7 +80,7 @@ function preload() {
   // Phaser.Canvas.setSmoothingEnabled(game.context, false);
   Phaser.Canvas.setImageRenderingCrisp(game.canvas);
 
-  game.load.image('defaultFont', 'assets/fonts/8x8/Street Fighter II (Capcom).png');
+  game.load.image('Street Fighter II (Capcom)', 'assets/fonts/8x8/Street Fighter II (Capcom).png');
   Object.keys(app.characters).forEach(name => {
     app.colors.forEach(color => {
       var imageName = name + '-' + color;
@@ -132,8 +135,8 @@ function create() {
     flagSprite.anchor.set(0.5);
     flagSprite.smoothed = false;
 
-    app.texts.name = new Text('name', {x: game.world.centerX, y: game.world.centerY - nameOffsetTop}, 4, 'defaultFont');
-    app.texts.description = new Text('description', {x: game.world.centerX, y: game.world.centerY - titleOffsetTop}, 2, 'defaultFont');
+    app.texts.name = new Text('name', {x: game.world.centerX, y: game.world.centerY - nameOffsetTop}, 4, 'Street Fighter II (Capcom)');
+    app.texts.description = new Text('description', {x: game.world.centerX, y: game.world.centerY - titleOffsetTop}, 2, 'Street Fighter II (Capcom)');
 
     game.stage.backgroundColor = '#272323';
 
@@ -483,14 +486,8 @@ var app = new Vue({
       }
     },
     texts: {
-      name: {
-        fontName: 'Street Fighter II (Capcom)',
-        value: ''
-      },
-      description: {
-        fontName: 'Street Fighter II (Capcom)',
-        value: ''
-      },
+      name: {},
+      description: {},
     }
   },
   methods: {
@@ -566,15 +563,19 @@ var app = new Vue({
       console.log(this.color);
     },
     savePicture: function () {
-      var bmd = game.make.bitmapData(game.canvas.width, game.canvas.height);
-  
+      
+      let width = game.canvas.width;
+      let height = game.canvas.height;
+      
+      var bmd = game.make.bitmapData(width, height);
       Phaser.Canvas.setSmoothingEnabled(bmd.context, false);
       Phaser.Canvas.setImageRenderingCrisp(bmd.canvas);
   
-      bmd.draw(game.canvas, 0, 0, game.canvas.width, game.canvas.height);
+      bmd.draw(game.canvas, 0, 0, width, height);
   
-      bmd.canvas.toBlob(function(blob) {
-        saveAs(blob, `${this.name}-${this.character}_${this.button}.png`);
+      var image = game.canvas.toDataURL("image/png");
+      bmd.canvas.toBlob(blob => {
+        saveAs(blob, `${this.name}-${this.character}_${this.color}.png`);
       });    
     }
   }
