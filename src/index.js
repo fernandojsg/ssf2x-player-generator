@@ -9,48 +9,45 @@ function Text(id, position, scale, fontName) {
   this.position = position;
   this.setupFont(fontName);
   this.setScale(scale);
+  this.currentStyle = 0;
 }
 
 Text.prototype = {
+  nextStyle: function(){
+    if (this.currentStyle < this.numStyles - 1) {
+      this.currentStyle++;
+      this.font.updateOffset(0, this.size);
+    }
+  }, 
+  prevStyle: function(){
+    if (this.currentStyle > 0) {
+      this.currentStyle--;
+      this.font.updateOffset(0, -this.size);
+    }
+  }, 
   setScale: function(scale) {
     this.image.scale.x = scale;
     this.image.scale.y = scale;
   },
-  zoomIn: function() {
-    if (zoomTween && zoomTween.isRunning) {
-      return;
-    }
-
-    zoomTween = game.add.tween(this.image.scale).to( { x: this.image.scale.x + 1, y: this.image.scale.y + 1 }, 250, Phaser.Easing.Linear.None, true);
-  },
-  zoomOut: function() {
-    if (zoomTween && zoomTween.isRunning) {
-      return;
-    }
-
-    if (this.image.scale.x > 1) {
-      zoomTween = game.add.tween(this.image.scale).to( { x: this.image.scale.x - 1, y: this.image.scale.y - 1 }, 250, Phaser.Easing.Linear.None, true);
-    }
-  },
   loadFont: function(f) {
+    this.fontName = f;
     game.load.image(this.id, 'assets/fonts/8x8/' + f + '.png', true);
     game.load.start();
   },
   setText: function(text) {
     this.text = this.font.text = text;
   },
-  setupFont: function(fontName) {
-    this.fontName = fontName;
-    if (game.cache.getImage(fontName).width === 1520)
+  setupFont: function(fontImageId) {
+    if (game.cache.getImage(fontImageId).width === 1520)
     {
-        size = 16;
+        this.size = 16;
     }
     else
     {
-        size = 8;
+        this.size = 8;
     }
     
-    styles = game.cache.getImage(fontName).height / size;
+    this.numStyles = game.cache.getImage(fontImageId).height / this.size;
 
     this.currentStyle = 0;
 
@@ -60,7 +57,7 @@ Text.prototype = {
         this.font.destroy();
     }
 
-    this.font = game.add.retroFont(fontName, size, size, Phaser.RetroFont.TEXT_SET1);
+    this.font = game.add.retroFont(fontImageId, this.size, this.size, Phaser.RetroFont.TEXT_SET1);
     this.font.align = Phaser.RetroFont.ALIGN_CENTER;
     this.font.multiLine = true;
     this.font.autoUpperCase = false;
@@ -112,23 +109,17 @@ var zoomTween = null;
 var lastTint = 0;
 
 function fileComplete(progress, cacheKey) {
-  if (cacheKey === 'name') {
-    nameText.setupFont(cacheKey);
-  } else if (cacheKey === 'description') {
-    descriptionText.setupFont(cacheKey);
-  }
+  app.texts[cacheKey].setupFont(cacheKey);
 }
 
-var nameText, descriptionText;
 var flagSprite;
 var background;
 function create() {
-
     game.load.onFileComplete.add(fileComplete, this);
 
     background = game.add.sprite(0,0, 'background-Blanka');
-    background.position.set(0, -120);
-    background.scale.setTo(2.33, 3);
+    background.anchor.set(0.5);
+    background.position.set(100, 220);
     background.smoothed = false;
     background.tint = Phaser.Color.hexToRGB('#27339f');
 
@@ -141,8 +132,8 @@ function create() {
     flagSprite.anchor.set(0.5);
     flagSprite.smoothed = false;
 
-    nameText = new Text('name', {x: game.world.centerX, y: game.world.centerY - nameOffsetTop}, 4, 'defaultFont');
-    descriptionText = new Text('description', {x: game.world.centerX, y: game.world.centerY - titleOffsetTop}, 2, 'defaultFont');
+    app.texts.name = new Text('name', {x: game.world.centerX, y: game.world.centerY - nameOffsetTop}, 4, 'defaultFont');
+    app.texts.description = new Text('description', {x: game.world.centerX, y: game.world.centerY - titleOffsetTop}, 2, 'defaultFont');
 
     game.stage.backgroundColor = '#272323';
 
@@ -249,149 +240,33 @@ function removeLineHeight() {
 
 }
 
-function nextStyle() {
-
-    if (currentStyle < (styles - 1))
-    {
-        currentStyle++;
-        font.updateOffset(0, size);
-        //$('#currentStyle').text('< ' + (currentStyle + 1));
-    }
-
-}
-
-function prevStyle() {
-
-    if (currentStyle > 0)
-    {
-        currentStyle--;
-        font.updateOffset(0, -size);
-        //$('#currentStyle').text('< ' + (currentStyle + 1));
-    }
-
-}
-
 var scanlineFilter;
-
-var init =performance.now();
 function update() {
-  nameText.font.text = app.name;
-  descriptionText.font.text = app.title;  
+  
+  characterSprite.position.x = app.transforms.character.position.x;
+  let offset = this.character === 'Thawk' ? 30 : 50;
+  characterSprite.position.y = game.world.height - characterSprite.height / 2 - offset;
+  characterSprite.scale.setTo(app.transforms.character.scale * 2.33, app.transforms.character.scale * 3);
+  if (app.flip) {
+    characterSprite.scale.x *= -1;
+  }
+
+
+
+  background.scale.setTo(app.transforms.background.scale * 2.33, app.transforms.background.scale * 3);
+
+  background.position.set(app.transforms.background.position.x, app.transforms.background.position.y);
+
+  app.texts.name.image.scale.set(app.transforms.name.scale, app.transforms.name.scale);
+  app.texts.name.image.position.set(app.transforms.name.position.x, app.transforms.name.position.y);
+  app.texts.name.font.text = app.name;
+
+
+  app.texts.description.image.scale.set(app.transforms.description.scale, app.transforms.description.scale);
+  app.texts.description.image.position.set(app.transforms.description.position.x, app.transforms.description.position.y);
+  //app.texts.name.image.position.set(app.transforms.name.position.x, app.transforms.name.position.y);
+  app.texts.description.font.text = app.title;  
 }
-
-/*
-function savePicture() {
-
-    var bmd = game.make.bitmapData(image.width, image.height);
-
-    Phaser.Canvas.setSmoothingEnabled(bmd.context, false);
-    Phaser.Canvas.setImageRenderingCrisp(bmd.canvas);
-
-    bmd.draw(image, 0, 0, image.width, image.height);
-
-    bmd.canvas.toBlob(function(blob) {
-        saveAs(blob, "arcade-font-writer.png");
-    });
-
-    ga('send', 'event', 'font', 'save', 'text', font.text);
-
-}
-
-/*
-$(function() {
-    //$('#font').change(
-        function() {
-            loadFont($("#font option:selected").text());
-            //$('#fontTitle').text($("#font option:selected").text());
-        }
-    );
-
-    nextFont = function () {
-
-        if (!game.load.isLoading)
-        {
-            //$('option:selected', 'select').removeAttr('selected').next('option').attr('selected', 'selected');
-            loadFont($("#font option:selected").text());
-            //$('#fontTitle').text($("#font option:selected").text());
-        }
-
-    }
-
-    prevFont = function () {
-
-        if (!game.load.isLoading)
-        {
-            //$('option:selected', 'select').removeAttr('selected').prev('option').attr('selected', 'selected');
-            loadFont($("#font option:selected").text());
-            //$('#fontTitle').text($("#font option:selected").text());
-        }
-
-    }
-
-    //$('#zoomIn').click(zoomIn);
-    //$('#zoomOut').click(zoomOut);
-
-    //$('#addSpacing').click(addSpacing);
-    //$('#removeSpacing').click(removeSpacing);
-
-    //$('#addLineHeight').click(addLineHeight);
-    //$('#removeLineHeight').click(removeLineHeight);
-
-    $("#currentStyle").click(function(event) {
-        prevStyle();
-        event.preventDefault();
-        document.onselectstart = function() { return false; };
-        event.target.ondragstart = function() { return false; };
-        return false;
-    });
-
-    $("#totalStyles").click(function(event) {
-        nextStyle();
-        event.preventDefault();
-        document.onselectstart = function() { return false; };
-        event.target.ondragstart = function() { return false; };
-        return false;
-    });
-
-    //$('#savePNG').click(savePicture);
-
-
-    $("#picker").spectrum({
-        color: "#272323",
-        showAlpha: false,
-        localStorageKey: "afm.background",
-        showPalette: true,
-        showSelectionPalette: true,
-        clickoutFiresChange: true,
-        showButtons: true,
-        preferredFormat: "hex",
-        palette: [
-            ["rgb(0, 0, 0)", "rgb(67, 67, 67)", "rgb(102, 102, 102)",
-            "rgb(204, 204, 204)", "rgb(217, 217, 217)","rgb(255, 255, 255)"],
-            ["rgb(152, 0, 0)", "rgb(255, 0, 0)", "rgb(255, 153, 0)", "rgb(255, 255, 0)", "rgb(0, 255, 0)",
-            "rgb(0, 255, 255)", "rgb(74, 134, 232)", "rgb(0, 0, 255)", "rgb(153, 0, 255)", "rgb(255, 0, 255)"], 
-            ["rgb(230, 184, 175)", "rgb(244, 204, 204)", "rgb(252, 229, 205)", "rgb(255, 242, 204)", "rgb(217, 234, 211)", 
-            "rgb(208, 224, 227)", "rgb(201, 218, 248)", "rgb(207, 226, 243)", "rgb(217, 210, 233)", "rgb(234, 209, 220)", 
-            "rgb(221, 126, 107)", "rgb(234, 153, 153)", "rgb(249, 203, 156)", "rgb(255, 229, 153)", "rgb(182, 215, 168)", 
-            "rgb(162, 196, 201)", "rgb(164, 194, 244)", "rgb(159, 197, 232)", "rgb(180, 167, 214)", "rgb(213, 166, 189)", 
-            "rgb(204, 65, 37)", "rgb(224, 102, 102)", "rgb(246, 178, 107)", "rgb(255, 217, 102)", "rgb(147, 196, 125)", 
-            "rgb(118, 165, 175)", "rgb(109, 158, 235)", "rgb(111, 168, 220)", "rgb(142, 124, 195)", "rgb(194, 123, 160)",
-            "rgb(166, 28, 0)", "rgb(204, 0, 0)", "rgb(230, 145, 56)", "rgb(241, 194, 50)", "rgb(106, 168, 79)",
-            "rgb(69, 129, 142)", "rgb(60, 120, 216)", "rgb(61, 133, 198)", "rgb(103, 78, 167)", "rgb(166, 77, 121)",
-            "rgb(91, 15, 0)", "rgb(102, 0, 0)", "rgb(120, 63, 4)", "rgb(127, 96, 0)", "rgb(39, 78, 19)", 
-            "rgb(12, 52, 61)", "rgb(28, 69, 135)", "rgb(7, 55, 99)", "rgb(32, 18, 77)", "rgb(76, 17, 48)"]
-        ],
-        move: function(color) {
-            game.stage.backgroundColor = color.toHexString();
-        },
-        change: function(color) {
-            game.stage.backgroundColor = color.toHexString();
-        }
-    });
-
-});
-*/
-
 
 var characterSprite;
 
@@ -432,6 +307,7 @@ var app = new Vue({
       'spain'
     ],
     fontName: 'Soldam (Data East)',
+    fontTitle: 'Soldam (Data East)',
     flag: 'spain',
     fontNames: [
       '1943 (Capcom)',
@@ -577,22 +453,47 @@ var app = new Vue({
     ],
     name: 'name',
     backgrounds: {
+      'Solid color': 'solid',
       'Blanka': 'sf2st-blanka.gif',
       'Dictator': 'ssf2x-dictator.gif',
+      'Sagat': 'ssf2x-sagat.gif',
       'World0': 'Ssf2t-world.gif',
       'World': 'Ssf2t-world-final.gif'
     },
-    background: 'Sagat',
+    selected: 'name',
+    background: 'Blanka',
     backgroundTint: '#27339f',
-    scanlines: false
+    scanlines: false,
+    transforms: {
+      name: {
+        //position: {x: game.world.centerX, y: game.world.centerY - nameOffsetTop},
+        position: {x: 275, y: 275 - nameOffsetTop},
+        scale: 4
+      },
+      background: {
+        position: {x: 100, y: 200},
+        scale: 1
+      },
+      character: {
+        position: {x: 275, y: 200},
+        scale: 1
+      },
+      description: {
+        //game.world.centerX, y: game.world.centerY - titleOffsetTop
+        position: {x: 275, y: 275 - titleOffsetTop},
+        scale: 2
+      }
+    },
+    texts: {
+      name: {},
+      description: {},
+      value: ''
+    }
   },
   methods: {
     changeCharacter: function () {
       characterSprite.loadTexture(this.character + '-' + this.color);
       characterSprite.anchor.set(0.5);
-      characterSprite.position.x = game.world.centerX;
-      let offset = this.character === 'Thawk' ? 30 : 50;
-      characterSprite.position.y = game.world.height - characterSprite.height / 2 - offset;
       
       characterSprite.smoothed = false;  
     },
@@ -606,37 +507,68 @@ var app = new Vue({
       }
     },
     updateName: function () {
-      nameText.font.text = this.name;
+      app.texts.name.font.text = this.name;
     },
     updateTitle: function () {
-      descriptionText.font.text = this.title;
+      app.texts.description.font.text = this.title;
     },
-    zoomIn: function () {
-      nameText.zoomIn();
+    nextFont: function(font) {
+      var pos = (this.fontNames.indexOf(font.fontName) + 1) % this.fontNames.length
+      font.loadFont(this.fontNames[pos]);
     },
-    zoomOut: function () {
-      nameText.zoomOut();
+    prevFont: function(font) {
+      var pos = (this.fontNames.indexOf(font.fontName) - 1) % this.fontNames.length
+      font.loadFont(this.fontNames[pos]);
     },
-    changeFont: function() {
-      nameText.loadFont(this.fontName);
+    nextStyle: function(font) {
+      font.nextStyle();
+    },
+    prevStyle: function(font) {
+      font.prevStyle();
+    },
+    changeFontName: function() {
+      app.texts.name.loadFont(this.fontName);
+    },
+    changeFontTitle: function() {
+      app.texts.description.loadFont(this.fontTitle);
     },
     changeBackground: function () {
-      background.loadTexture('background-' + this.background);
-      background.smoothed = false;
-      let y = 120;
-      if (background.height - y < game.canvas.height) {
-        y = Math.abs(game.canvas.height - background.height);
+      if (this.background === 'Solid color') {
+        background.alpha = 0;
+        game.stage.backgroundColor = this.backgroundTint;
+      } else {
+        background.alpha = 1;
+        background.loadTexture('background-' + this.background);
+        background.smoothed = false;
+        background.anchor.set(0.5);
+        let y = 120;
+        if (background.height - y < game.canvas.height) {
+          y = Math.abs(game.canvas.height - background.height);
+        }
+        background.position.set(0, -y);  
       }
-      background.position.set(0, -y);
     },
     changeBackgroundColorTint: function () {
       background.tint = Phaser.Color.hexToRGB(this.backgroundTint);
+      game.stage.backgroundColor = this.backgroundTint;
     },
     flipHCharacter: function () {
-      characterSprite.scale.x *= -1;
+      this.flip = !this.flip;
     },
     changeScanlines: function () {
       scanlineFilter.uniforms.enabled.value = this.scanlines ? 1 : 0;
+    },
+    savePicture: function () {
+      var bmd = game.make.bitmapData(game.canvas.width, game.canvas.height);
+  
+      Phaser.Canvas.setSmoothingEnabled(bmd.context, false);
+      Phaser.Canvas.setImageRenderingCrisp(bmd.canvas);
+  
+      bmd.draw(game.canvas, 0, 0, game.canvas.width, game.canvas.height);
+  
+      bmd.canvas.toBlob(function(blob) {
+        saveAs(blob, `${this.name}-${this.character}_${this.button}.png`);
+      });    
     }
   }
 });

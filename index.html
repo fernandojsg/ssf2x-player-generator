@@ -13,61 +13,83 @@
     <link rel="stylesheet" href="style.css" type="text/css"/>
     <script src="https://cdn.jsdelivr.net/phaser/2.6.2/phaser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!--<script src="vendor/file-saver.js"></script>-->
   </head>
   <body>
-    <h1>SSF2X Character generator</h1>
     <div id="app">
+      <h1>SSF2X Character generator</h1>
       <ul>
-        <label>Scanlines: <input name="scanlines" type="checkbox" v-model="scanlines" v-on:change="changeScanlines()"></label>
-        <li>
-            Background:
-            <select v-model="background" v-on:change="changeBackground()" name="background" id="">
-              <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
-                {{ key }}
-              </option>
-            </select>
-            Tint: <input type='color' value="#ffffff" v-model="backgroundTint" v-on:change="changeBackgroundColorTint"/>
-          </li>
-        <li>
-          Character:
-          <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
-            <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
-              {{ value }}
+      <label>Scanlines: <input name="scanlines" type="checkbox" v-model="scanlines" v-on:change="changeScanlines()"></label>
+      <li>
+          Background:
+          <select v-model="background" v-on:change="changeBackground()" name="background" id="">
+            <option v-for="(value, key) in backgrounds" v-bind:value="key" :key="key">
+              {{ key }}
             </option>
           </select>
-          <input type="button" value="Flip Horizontal" v-on:click="flipHCharacter()">
+          Tint: <input type='color' value="#ffffff" v-model="backgroundTint" v-on:change="changeBackgroundColorTint"/>
         </li>
-          <li>
-            Color:
-            <select v-model="color" name="color" v-on:change="changeCharacter()">
-              <option v-for="color in colors" v-bind:value="color">
-                {{ color.toUpperCase() }}
+      <li>
+        Character:
+        <select v-model="character" v-on:change="changeCharacter()" name="character" id="">
+          <option v-for="(value, key) in characters" v-bind:value="key" :key="key">
+            {{ value }}
+          </option>
+        </select>
+        <input type="button" value="Flip Horizontal" v-on:click="flipHCharacter()">
+      </li>
+        <li>
+          Color:
+          <select v-model="color" name="color" v-on:change="changeCharacter()">
+            <option v-for="color in colors" v-bind:value="color">
+              {{ color.toUpperCase() }}
+            </option>
+          </select>
+        </li>
+        <li>
+          Flag:
+          <select v-model="flag" name="flag" v-on:change="changeFlag()">
+              <option value="none"></option>
+              <option v-for="flag in flags" v-bind:value="flag">
+                {{ flag.toUpperCase() }}
               </option>
             </select>
           </li>
-          <li>
-            Flag:
-            <select v-model="flag" name="flag" v-on:change="changeFlag()">
-                <option value="none"></option>
-                <option v-for="flag in flags" v-bind:value="flag">
-                  {{ flag.toUpperCase() }}
-                </option>
-              </select>
-            </li>
-          <li>
-            Name: <input type="text" v-on:keyup="updateName" v-model="name">
-          </li>
-          <li>
-            Title: <textarea v-on:keyup="updateTitle" v-model="title" name="title" id="" cols="65" rows="4"></textarea>
-          </li>
-          Font: <select v-model="fontName" name="font" v-on:change="changeFont()">
+        <li>
+          Name: <input type="text" v-on:keyup="updateName" v-model="name"><br/>
+          Font: <select v-model="fontName" name="font" v-on:change="changeFontName()">
               <option v-for="font in fontNames" v-bind:value="font">
                 {{ font }}
               </option>
             </select>
-          Title font size: <input type="button" value="+" v-on:click="zoomIn()"> 
-          <input type="button" value="-" v-on:click="zoomOut()"> 
-        </ul>
+            <button v-on:click="prevFont(texts.name)">▲</button>
+            <button v-on:click="nextFont(texts.name)">▼</button>
+            style:
+            <button v-on:click="prevStyle(texts.name)"><</button>
+            <button v-on:click="nextStyle(texts.name)">></button>
+            {{(texts.name.currentStyle + 1)}}/{{(texts.name.numStyles)}}
+          </li>
+        <li>
+          Title: <textarea v-on:keyup="updateTitle" v-model="title" name="title" id="" cols="65" rows="4"></textarea><br>
+          Font: <select v-model="fontTitle" name="font" v-on:change="changeFontTitle()">
+              <option v-for="font in fontNames" v-bind:value="font">
+                {{ font }}
+              </option>
+            </select>          
+          </li>
+        <li style="margin-top: 20px">
+            <label><input type="radio" value="name" v-model="selected"> name</label>
+            <label><input type="radio" value="character" v-model="selected"> character</label>
+            <label><input type="radio" value="description" v-model="selected"> description</label>
+            <label><input type="radio" value="background" v-model="selected"> background</label>
+        </li>
+        Zoom: <input type="range" v-model="transforms[selected].scale" min="1" max="10" step="0.5"> x{{transforms[selected].scale}}
+        Position  x:<input type="range" v-model="transforms[selected].position.x" min="0" max="550"> {{transforms[selected].position.x}}
+        y:<input type="range" v-model="transforms[selected].position.y" min="0" max="550"> {{transforms[selected].position.y }}
+        <li>
+          <!--<button v-on:click="savePicture()">Save picture to PNG</button>-->
+        </li>
+      </ul>
     </div>
     <script src="src/index.js" async defer></script>
   </body>
