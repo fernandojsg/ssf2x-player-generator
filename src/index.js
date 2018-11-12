@@ -32,7 +32,6 @@ Text.prototype = {
     this.image.scale.y = scale;
   },
   loadFont: function(f) {
-    console.log('>>>>>>>>>>>>>>', f);
     this.fontName = f;
     game.load.image(this.id, 'assets/fonts/8x8/' + f + '.png', true);
     game.load.start();
@@ -151,14 +150,7 @@ function create() {
   
     scanlineFilter.uniforms.enabled = { type: '1i', value: app.scanlines ? 1 : 0 };
 
-    /*
-    var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
-    graphics.beginFill(0xFF3300);
-    graphics.lineStyle(1, 0xffd900);
-    graphics.moveTo(50, 390);
-    graphics.lineTo(300, 390);
-    graphics.endStroke();
-    */
+
 
 /*
     var backspace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
@@ -268,7 +260,36 @@ function update() {
   app.texts.description.image.scale.set(app.transforms.description.scale, app.transforms.description.scale);
   app.texts.description.image.position.set(app.transforms.description.position.x, app.transforms.description.position.y);
   //app.texts.name.image.position.set(app.transforms.name.position.x, app.transforms.name.position.y);
-  app.texts.description.font.text = app.title;  
+  app.texts.description.font.text = app.title; 
+  /*
+  var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
+  */
+
+ var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
+    // draw a circle
+    graphics.lineStyle(0);
+    graphics.beginFill(0xFFFF0B, 0.5);
+    graphics.drawCircle(100, 20, 20);
+    graphics.endFill();
+
+    
+    graphics.lineStyle(20, 0x33FF00);
+    graphics.moveTo(0,0);
+    graphics.lineTo(-160, -30);
+
+    var angle = 100;
+
+    pic.x = game.input.x;
+    pic.y = game.input.y;
+    cropRect.x = game.input.x;
+    cropRect.y = game.input.y;
+
+    pic.updateCrop();
+
+    graphics.beginFill(0xFF3300);
+    graphics.lineStyle(2, 0x0000FF, 1);
+    graphics.drawRoundedRect(-550, -550, 550, 550, angle);
+    graphics.endFill();  
 }
 
 var characterSprite;
