@@ -264,32 +264,18 @@ function update() {
   /*
   var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
   */
-
+/*
  var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
-    // draw a circle
-    graphics.lineStyle(0);
-    graphics.beginFill(0xFFFF0B, 0.5);
-    graphics.drawCircle(100, 20, 20);
-    graphics.endFill();
+ 
+    var crop = new Phaser.RoundedRectangle(-75, -20, 75,20);
 
-    
-    graphics.lineStyle(20, 0x33FF00);
-    graphics.moveTo(0,0);
-    graphics.lineTo(-160, -30);
-
-    var angle = 100;
-
-    pic.x = game.input.x;
-    pic.y = game.input.y;
-    cropRect.x = game.input.x;
-    cropRect.y = game.input.y;
-
-    pic.updateCrop();
-
+    background.crop(crop);
+/*
     graphics.beginFill(0xFF3300);
     graphics.lineStyle(2, 0x0000FF, 1);
     graphics.drawRoundedRect(-550, -550, 550, 550, angle);
     graphics.endFill();  
+    */
 }
 
 var characterSprite;
