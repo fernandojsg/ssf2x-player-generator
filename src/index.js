@@ -1,4 +1,4 @@
-var game = new Phaser.Game(550, 550, Phaser.WEBGL, 'container', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(550, 550, Phaser.CANVAS, 'container', { preload: preload, create: create, update: update });
 game.preserveDrawingBuffer = true;
 
 nameOffsetTop = 230;
@@ -241,6 +241,9 @@ function update() {
   characterSprite.position.x = app.transforms.character.position.x;
   let offset = this.character === 'Thawk' ? 30 : 50;
   characterSprite.position.y = game.world.height - characterSprite.height / 2 - offset;
+
+  characterSprite.position.y = app.transforms.character.position.y;
+
   characterSprite.scale.setTo(app.transforms.character.scale * 2.33, app.transforms.character.scale * 3);
   if (app.flip) {
     characterSprite.scale.x *= -1;
@@ -261,22 +264,24 @@ function update() {
   app.texts.description.image.position.set(app.transforms.description.position.x, app.transforms.description.position.y);
   //app.texts.name.image.position.set(app.transforms.name.position.x, app.transforms.name.position.y);
   app.texts.description.font.text = app.title; 
+
+  
   /*
   var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
   */
-/*
- var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
+ /*
+var graphics = game.add.graphics(game.canvas.width, game.canvas.height);
  
-    var crop = new Phaser.RoundedRectangle(-75, -20, 75,20);
-
     background.crop(crop);
-/*
     graphics.beginFill(0xFF3300);
     graphics.lineStyle(2, 0x0000FF, 1);
+    angle = 100;
     graphics.drawRoundedRect(-550, -550, 550, 550, angle);
     graphics.endFill();  
     */
 }
+
+var ctx = null;
 
 var characterSprite;
 
@@ -314,7 +319,13 @@ var app = new Vue({
     flags: [
       'france',
       'italy',
-      'spain'
+      'spain',
+      'brasil',
+      'catalunya',
+      'navarra',
+      'aragon',
+      'andalucia',
+      'castillaleon'
     ],
     flag: 'spain',
     fontNames: [
@@ -461,12 +472,20 @@ var app = new Vue({
     ],
     name: 'name',
     backgrounds: {
+      'DJ': 'deejay.jpg',
+      'Boxer': 'boxer.gif',
+      'Boxer2': 'boxer.jpg',
+      'Chunli': 'chunli.png',
+      'Ryu': 'ryu.png',
       'Solid color': 'solid',
       'Blanka': 'sf2st-blanka.gif',
       'Dictator': 'ssf2x-dictator.gif',
       'Sagat': 'ssf2x-sagat.gif',
       'World0': 'Ssf2t-world.gif',
-      'World': 'Ssf2t-world-final.gif'
+      'World': 'Ssf2t-world-final.gif',
+      'Zangief': 'zangief.png',
+      'Vega': 'vega.png',
+      'Honda': 'honda.gif'
     },
     selected: 'name',
     background: 'Blanka',
